@@ -1,0 +1,6 @@
+client/node_modules
+server/node_modules
+AutoGrader.code-workspace
+todo.txt
+server/.env
+*self.ico
