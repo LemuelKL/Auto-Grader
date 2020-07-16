@@ -29,6 +29,7 @@ app.use(require('./routes/ungraded.js'))
 app.use(require('./routes/papers.js'))
 app.use(require('./routes/pdf.js'))
 app.use(require('./routes/gradings.js'))
+app.use(require('./routes/presets.js'))
 
 app.listen(3000, () => {
   console.log("Listening on port 3000...")

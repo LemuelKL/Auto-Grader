@@ -9,6 +9,21 @@ var QRCode = require('qrcode')
 var parse = require('parse-svg-path')
 var extract = require('extract-svg-path').parse
 
+router.get('/papers/debug/:name', (req, res) => {
+  Paper.deleteMany({ name: req.params.name }, function (err) {
+    if (err) return res.json({ msg: err })
+  });
+})
+
+router.get('/papers', async (req, res) => {
+  try {
+    const papers = await Paper.find({})
+    res.json(papers)
+  } catch (err) {
+    res.json({ msg: err })
+  }
+})
+
 router.get('/papers/:id', async (req, res) => {
   try {
     const paper = await Paper.findOne({ id: req.params.id })
@@ -61,7 +76,7 @@ router.post('/papers', (req, res) => {
         const answerSheet = await PDFDocument.create()
         const copiedPages = await answerSheet.copyPages(templateDoc, templateDoc.getPageIndices())
         for (let [i, page] of copiedPages.entries()) {
-          QRCode.toString(`{"paper_id":"${paperId}","candidate":"${candidate}","page":${i + 1}}`, {type: 'svg'}, async function (err, xmlSvg) {
+          QRCode.toString(`{"paper_id":"${paperId}","candidate":"${candidate}","page":${i + 1}}`, { type: 'svg' }, async function (err, xmlSvg) {
             var converted = ''  // Manually parse XML SVG to pure SVG Paths
             var paths = parse(extract(xmlSvg))
             for (let path of paths) {
@@ -75,7 +90,7 @@ router.post('/papers', (req, res) => {
               }
             }
             // At scale:1, [w, h] = 41, 41
-            page.drawSvgPath(converted, {x:0 , y:page.getHeight(), scale: 1}) // y-axis counts from the bottom
+            page.drawSvgPath(converted, { x: 0, y: page.getHeight(), scale: 1 }) // y-axis counts from the bottom
             answerSheet.addPage(page)
             fs.writeFileSync(`${process.cwd()}/public/papers/${paperId}/${path.parse(template.name).name}---${candidate}.pdf`, await answerSheet.save())
           })

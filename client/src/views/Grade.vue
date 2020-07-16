@@ -61,7 +61,7 @@
               </v-card>
 
               <v-card outlined class="ma-2">
-                <v-card-title>Grader</v-card-title>
+                <v-card-title>Controls</v-card-title>
 
                 <v-row no-gutters class="ma-2">
                   <v-col cols="6">
@@ -146,28 +146,66 @@
                 </div>
               </v-card>
               <v-card outlined class="ma-2">
-                <v-card-title>Actions</v-card-title>
-                <v-card-subtitle>Give a score: {{givenScore}}</v-card-subtitle>
+                <v-card-title>{{selectedStudent.cname}} {{selectedStudent.class}} ({{selectedStudent.classNo}}) {{selectedStudent.pyccode}}</v-card-title>
+                <v-card-subtitle>Score: {{displayScore}}</v-card-subtitle>
                 <v-card-text>
-                  <v-chip-group
-                    v-model="givenScoreOnes"
-                    active-class="deep-purple--text text--accent-4"
-                    mandatory
-                  >
-                    <v-chip v-for="score in scoresToChoose" :key="score" :value="score">{{ score }}</v-chip>
-                  </v-chip-group>
-                  <v-chip-group
-                    v-model="givenScoreTenths"
-                    active-class="deep-purple--text text--accent-4"
-                    mandatory
-                  >
-                    <v-chip v-for="score in decimalChips" :key="score" :value="score">{{ score }}</v-chip>
-                  </v-chip-group>
+                  <v-container class="pa-0">
+                    <v-row>
+                      <v-col cols="6">
+                        <v-chip-group
+                          v-model="givenScoreOnes"
+                          active-class="deep-purple--text text--accent-4"
+                          mandatory
+                        >
+                          <v-chip
+                            v-for="score in scoresToChoose"
+                            :key="score"
+                            :value="score"
+                          >{{ score }}</v-chip>
+                        </v-chip-group>
+                        <v-chip-group
+                          v-model="givenScoreTenths"
+                          active-class="deep-purple--text text--accent-4"
+                          mandatory
+                        >
+                          <v-chip
+                            v-for="score in decimalChips"
+                            :key="score"
+                            :value="score"
+                          >{{ score }}</v-chip>
+                        </v-chip-group>
+                      </v-col>
+                      <v-col cols="6">
+                        <v-row no-gutters>
+                          <v-select
+                            outlined
+                            label="Preset Remark"
+                            hide-details
+                            chips
+                            :items="presets"
+                            item-text="name"
+                            item-value="_id"
+                            v-model="presetRemark"
+                            multiple
+                            deletable-chips
+                            :menu-props="{ top: false, offsetY: true }"
+                          ></v-select>
+                        </v-row>
+                        <v-row no-gutters>
+                          <v-textarea
+                            outlined
+                            label="Custom Remark"
+                            hide-details
+                            class="mt-2"
+                            v-model="customRemark"
+                          ></v-textarea>
+                        </v-row>
+                      </v-col>
+                    </v-row>
+                  </v-container>
                 </v-card-text>
                 <v-card-actions>
-                  <v-btn @click="submitGrading">
-                    {{graded?'Update Grading':'Submit Grading'}}
-                  </v-btn>
+                  <v-btn @click="submitGrading">{{graded?'Update Grading':'Submit Grading'}}</v-btn>
                 </v-card-actions>
               </v-card>
             </v-col>
@@ -218,11 +256,12 @@ export default {
 
       questionIndex: 0,
 
-      grading: { candidate: "", score: 0 }, // From API
+      grading: { candidate: "", score: 0, presetRemark: [] }, // From API
       graded: false,
       givenScoreOnes: 0,
       givenScoreTenths: 0,
-
+      customRemark: "",
+      presetRemark: [], // From API
     };
   },
 
@@ -269,30 +308,51 @@ export default {
         .then(data => {
           if (data != null) {
             this.grading = data;
-            this.graded = true
+            this.graded = true;
+
+            this.customRemark = data.customRemark;
+            this.presetRemark = data.presetRemark;
 
             // Such a crappy code but hey it works
-            var decPart = '0.' + (data.score+"").split(".")[1];
-            var intPart = (data.score+"").split(".")[0];
-            this.givenScoreTenths = parseFloat(decPart)
-            this.givenScoreOnes = parseInt(intPart)
-          }
-          else {
+            var decPart = "0." + (data.score + "").split(".")[1];
+            var intPart = (data.score + "").split(".")[0];
+            this.givenScoreTenths = parseFloat(decPart);
+            this.givenScoreOnes = parseInt(intPart);
+          } else {
             this.grading = { candidate: "", score: 0 };
-            this.graded = false
+            this.graded = false;
           }
         });
     },
     submitGrading() {
+      // Called when Update as well
       const grading = {
         paperId: this.selectedPaper.id,
         questionName: this.currentQuestoinName,
         candidate: this.selectedStudent.pyccode,
         score: this.givenScore,
-        presetRemark: '',
-        customRemark: ''
-      }
-      axios.post('http://localhost:3000/gradings', grading)
+        presetRemark: this.presetRemark,
+        customRemark: this.customRemark
+      };
+      axios
+        .put("http://localhost:3000/gradings", grading)
+        .then(response => {
+          if (response.status == 200) {
+            this.fetchGrading();
+          }
+        })
+        .catch(err => {
+          alert(err);
+        });
+    },
+
+    fetchPresets() {
+      axios
+        .get(`http://localhost:3000/presets/${this.selectedPaper.id}`)
+        .then(response => response.data)
+        .then(data => {
+          this.presets = data;
+        });
     }
   },
 
@@ -331,13 +391,12 @@ export default {
         return this.grading.score;
       else return "?"; // Maybe sth will go out of sync?
     },
-    givenScore: function () {
-      return this.givenScoreOnes + this.givenScoreTenths
+    givenScore: function() {
+      return this.givenScoreOnes + this.givenScoreTenths;
     },
-    decimalChips: function () {
-      if (this.givenScoreOnes == this.currentQuestionScore)
-        return [0]
-      else return [0, 0.5]
+    decimalChips: function() {
+      if (this.givenScoreOnes == this.currentQuestionScore) return [0];
+      else return [0, 0.5];
     }
   },
 
@@ -368,6 +427,8 @@ export default {
               });
           }
         });
+
+      this.fetchPresets();
     },
 
     questionIndex: function() {
@@ -376,12 +437,12 @@ export default {
       );
       const pageToGoTo = question.page;
       this.page = pageToGoTo;
-      
-      this.fetchGrading()
+
+      this.fetchGrading();
     },
 
-    selectedStudent: function () {
-      this.fetchGrading()
+    selectedStudent: function() {
+      this.fetchGrading();
     }
   },
 

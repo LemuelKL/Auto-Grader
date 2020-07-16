@@ -5,7 +5,7 @@ const GradingSchema = mongoose.Schema({
   questionName: String,
   candidate: String,
   score: Number,
-  presetRemark: String, // Id of that remark preset
+  presetRemark: [String], // Ids of that remark preset
   customRemark: String  // Marker's typings
 })
 
