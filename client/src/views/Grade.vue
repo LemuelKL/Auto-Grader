@@ -261,7 +261,7 @@ export default {
       givenScoreOnes: 0,
       givenScoreTenths: 0,
       customRemark: "",
-      presetRemark: [], // From API
+      presetRemark: [],
     };
   },
 
@@ -318,9 +318,11 @@ export default {
             var intPart = (data.score + "").split(".")[0];
             this.givenScoreTenths = parseFloat(decPart);
             this.givenScoreOnes = parseInt(intPart);
-          } else {
+          } else {  // Grading does not exist on DB
             this.grading = { candidate: "", score: 0 };
             this.graded = false;
+            this.customRemark = "";
+            this.presetRemark = [];
           }
         });
     },
