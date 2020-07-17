@@ -29,4 +29,24 @@ router.post('/students', (req, res) => {
   })
 })
 
+// Get list of students by class.
+router.get('/students/class/:class', async (req, res) => {
+  try {
+    const students = await Student.find({ class: req.params.class })
+    res.json(students)
+  } catch (err) {
+    res.json({ msg: err })
+  }
+})
+
+// Get list of students **grouped** by class.
+router.get('/students/grouped/class', async (req, res) => {
+  try {
+    const students = await Student.aggregate([{$group:{_id:"$class", data:{$push:"$$ROOT"}}}])
+    res.json(students)
+  } catch (err) {
+    res.json({ msg: err })
+  }
+})
+
 module.exports = router

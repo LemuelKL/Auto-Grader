@@ -13,7 +13,11 @@
           ></v-file-input>
         </v-row>
 
-        <v-row>
+        <v-row no-gutters>
+          <candidate-register @candidatesChanged="updateCandidates"></candidate-register>
+        </v-row>
+
+        <v-row no-gutters>
           <question-register
             :src="imageSrc"
             :page="page"
@@ -38,9 +42,11 @@
 <script>
 import axios from "axios";
 import QuestoniRegister from "./QuestionRegister";
+import CandidateRegister from "./CandidateRegister";
 export default {
   components: {
-    "question-register": QuestoniRegister
+    "question-register": QuestoniRegister,
+    "candidate-register": CandidateRegister
   },
   data() {
     return {
@@ -51,6 +57,7 @@ export default {
       imgW: 0,
       imgH: 0,
       questions: [], // Array of objects, see newQuestion() in child
+      candidates: [], // List of pyccodes supplied by child CandidateRegister
 
       awaitingNumPagesResult: false
     };
@@ -61,7 +68,7 @@ export default {
       formData.append("template", this.template);
       formData.append(
         "candidates",
-        JSON.stringify(["pyc13000", "pyc13001", "pyc13002"])
+        JSON.stringify(this.candidates)
       );
       formData.append("questions", JSON.stringify(this.questions));
 
@@ -86,6 +93,12 @@ export default {
         }
       }
       if (mode >= 1 && mode < this.numPages) this.page = mode;
+    },
+    updateCandidates(candidates) {
+      this.candidates = []
+      candidates.forEach(c => {
+        this.candidates.push(c.pyccode)
+      });
     }
   },
   watch: {
