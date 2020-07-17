@@ -63,7 +63,7 @@ export default {
           !this.existingQuestions.find(eQ => eQ.name === name) ||
           "Already exists.",
         scoreType: score => {
-          var c1 = /^\d*\.?((5)|(0))?$/;
+          var c1 = /^\d*\.?((5)|(0))?$/;  
           var c2 = /^([1-9]{0,1})([0-9]{1})(\.[0-9])?$/;
           if (score.match(c1) && score.match(c2)) return true;
           return "Invalid.";
