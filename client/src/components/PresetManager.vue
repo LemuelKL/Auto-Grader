@@ -1,7 +1,7 @@
 <template>
   <v-container fluid>
     <v-data-iterator
-      :items="remarks"
+      :items="presets"
       :items-per-page.sync="itemsPerPage"
       :page="page"
       :search="search"
@@ -62,7 +62,7 @@
                 </v-list-item>
               </v-list>
               <v-card-actions>
-                <v-btn text @click="editRemark(item._id)">Edit</v-btn>
+                <v-btn text @click="editPreset(item._id)">Edit</v-btn>
                 <v-btn text @click="deleteRemark(item._id)">Delete</v-btn>
               </v-card-actions>
             </v-card>
@@ -71,7 +71,7 @@
       </template>
 
       <template v-slot:footer>
-        <v-row class="mt-2" align="center" justify="center">
+        <v-row class="ma-2" align="center" justify="center">
           <span class="grey--text">Items per page</span>
           <v-menu offset-y>
             <template v-slot:activator="{ on, attrs }">
@@ -93,6 +93,12 @@
 
           <v-spacer></v-spacer>
 
+          <v-btn fab dark color="blue darken-3" class="ml-1" @click="createPreset">
+            <v-icon>mdi-plus</v-icon>
+          </v-btn>
+
+          <v-spacer></v-spacer>
+
           <span class="mr-4 grey--text">Page {{ page }} of {{ numberOfPages }}</span>
           <v-btn fab dark color="blue darken-3" class="mr-1" @click="formerPage">
             <v-icon>mdi-chevron-left</v-icon>
@@ -103,39 +109,27 @@
         </v-row>
       </template>
     </v-data-iterator>
-    <v-dialog v-model="editDialog" max-width="30%">
-      <v-card>
-        <v-card-title>Edit</v-card-title>
-        <v-card-text>
-          <v-text-field outlined label="Name" v-model="editedRemark.name"></v-text-field>
-          <v-text-field outlined label="Description" v-model="editedRemark.description"></v-text-field>
-          <v-row align="center" no-gutters>
-            <v-checkbox v-model="paperSpecific" hide-details class="shrink mr-2 mt-0"></v-checkbox>
-            <v-combobox
-              :disabled="!paperSpecific"
-              :label="`Paper Specific${paperSpecific?` - ${selectedPaper.id}`:''}`"
-              :items="papers"
-              item-text="name"
-              item-value="id"
-              v-model="selectedPaper"
-            ></v-combobox>
-          </v-row>
-        </v-card-text>
-        <v-card-actions>
-          <v-btn text @click="submitEditedRemark">Submit</v-btn>
-          <v-spacer></v-spacer>
-          <v-btn text @click="editDialog = false">Cancel</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <preset-dialog
+      :papers="papers"
+      :show.sync="presetDialog"
+      :mode="presetDialogMode"
+      :presetId="presetId"
+      :preset="preset"
+      @presetUpdated="updatePresetVisual"
+      @presetCreated="spawnPreset"
+    ></preset-dialog>
   </v-container>
 </template>v
 
 <script>
 import axios from "axios";
+import PresetDialog from "./PresetDialog";
 export default {
   props: {
     papers: Array
+  },
+  components: {
+    "preset-dialog": PresetDialog
   },
   data() {
     return {
@@ -147,18 +141,18 @@ export default {
       itemsPerPage: 4,
       sortBy: "name",
       keys: ["Name", "Description", "Paper"],
-      remarks: [],
+      presets: [],
 
-      // Data of Edit Dialog
-      editDialog: false,
-      editedRemark: {},
-      paperSpecific: false,
-      selectedPaper: { name: "", id: "" }
+      // Props for PresetDialog
+      presetDialog: false,
+      presetDialogMode: "???",
+      presetId: "",
+      preset: {}
     };
   },
   computed: {
     numberOfPages() {
-      return Math.ceil(this.remarks.length / this.itemsPerPage);
+      return Math.ceil(this.presets.length / this.itemsPerPage);
     },
     filteredKeys() {
       return this.keys.filter(key => key !== `Name`);
@@ -188,12 +182,12 @@ export default {
           });
       });
     },
-    fetchRemarks() {
+    fetchPresets() {
       axios
         .get("http://localhost:3000/presets")
         .then(response => response.data)
         .then(async data => {
-          this.remarks = [];
+          this.presets = [];
           for (let d of data) {
             var r = {
               name: "",
@@ -211,45 +205,49 @@ export default {
                 d.paperId
               }`;
             }
-            this.remarks.push(r);
+            this.presets.push(r);
           }
         });
     },
-    editRemark(_id) {
-      this.editDialog = true;
-      this.editedRemark = this.remarks.find(r => r._id == _id);
-      if (this.editedRemark.paperId != "") {
-        this.selectedPaper = this.papers.find(
-          p => p.id == this.editedRemark.paperId
-        );
-        this.paperSpecific = true;
-      } else {
-        this.paperSpecific = false;
-      }
+    createPreset() {
+      this.presetDialogMode = "Create";
+      this.presetDialog = true;
     },
-    submitEditedRemark() {
-      var update = {};
-      update.name = this.editedRemark.name;
-      update.description = this.editedRemark.description;
-      if (this.paperSpecific) update.paperId = this.selectedPaper.id;
-      else update.paperId = "";
-      axios
-        .put(`http://localhost:3000/presets/${this.editedRemark._id}`, update)
-        .then(response => {
-          if (response.status == 200) console.log("Good");
-          this.fetchRemarks();
-          this.editDialog = false;
-        });
+    editPreset(_id) {
+      this.presetDialogMode = "Edit";
+      this.presetId = _id;
+      this.preset = this.presets.find(r => r._id == this.presetId);
+      this.presetDialog = true;
     },
     deleteRemark(_id) {
       axios.delete(`http://localhost:3000/presets/${_id}`).then(response => {
         if (response.status == 200) console.log("Good");
-        this.fetchRemarks();
+        const index = this.presets.findIndex(p => p._id === _id)
+        this.presets.splice(index, 1)
+        // this.fetchPresets();
       });
+    },
+    async updatePresetVisual(newPreset) {
+      var index = this.presets.findIndex(r => r._id == newPreset._id);
+      if (newPreset.paperId != "") {
+        newPreset.paper = `${await this.fetchPaperNameById(
+          newPreset.paperId
+        )} - ${newPreset.paperId}`;
+      }
+      console.log(index, newPreset)
+      this.$set(this.presets, index, newPreset) // Vue's reactivity for Array https://vuejs.org/v2/guide/reactivity.html#For-Arrays
+    },
+    async spawnPreset(newPreset) {
+      if (newPreset.paperId != "") {
+        newPreset.paper = `${await this.fetchPaperNameById(
+          newPreset.paperId
+        )} - ${newPreset.paperId}`;
+      }
+      this.presets.push(newPreset);
     }
   },
   created() {
-    this.fetchRemarks();
+    this.fetchPresets();
   }
 };
 </script>

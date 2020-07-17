@@ -24,12 +24,12 @@ router.get('/presets/:paperId', async (req, res) => {
 router.post('/presets', (req, res) => {
   const preset = new Preset({
     paperId: req.body.paperId,
-    name: req.body.presetName,
-    description: req.body.presetDescription,
+    name: req.body.name,
+    description: req.body.description,
   })
-  preset.save().then(data => {
-    console.log("Successfully created new Preset", data)
-    res.json(preset)
+  preset.save().then(doc => {
+    console.log("Successfully created new Preset", doc)
+    res.json(doc)
   }).catch(err => {
     console.log("Error when creating new Preset", err)
     res.status(500)
@@ -38,16 +38,15 @@ router.post('/presets', (req, res) => {
 
 router.put('/presets/:_id', async (req, res) => {
   try {
-    const preset = await Preset.findOneAndUpdate({ _id: req.params._id }, req.body, {new: true}, function (err, doc) {
+    const preset = await Preset.findOneAndUpdate({ _id: req.params._id }, req.body, {new: true, useFindAndModify: false}, function (err, doc) {
       if (err) {
         res.status(500).send()
       }
       else {
         console.log("Successfully created/updated Preset document: ", doc)
-        res.status(200).send()
+        res.json(doc)
       }
     })
-    res.json(preset)
   } catch (err) {
     res.json({ msg: err })
   }
