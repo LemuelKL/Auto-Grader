@@ -6,13 +6,13 @@
       </v-card-title>
       <v-form v-model="valid">
         <v-row no-gutters>
-          <v-file-input outlined v-model="pdf" accept=".pdf" type="file" label="PDF Input"></v-file-input>
+          <v-file-input outlined v-model="paper" accept=".pdf" type="file" label="PDF Input"></v-file-input>
         </v-row>
         <v-row no-gutters class="pl-5 pt-5">
           <v-btn
-            @click="onUploadFile"
+            @click="uploadPaper"
             class="ml-3"
-            :disabled="!this.pdf || !valid"
+            :disabled="!this.paper || !valid"
           >
             Import Paper
           </v-btn>
@@ -38,7 +38,7 @@ import axios from "axios";
 export default {
   data () {
     return {
-      pdf: null,
+      paper: null,
       rules: {
         required: value => !!value || 'Required',
         counter2: value => value.length == 2 || 'Exactly 2 characters',
@@ -51,9 +51,9 @@ export default {
     }
   },
   methods: {
-    onUploadFile() {
+    uploadPaper() {
       const formData = new FormData()
-      formData.append("pdf", this.pdf)
+      formData.append("pdf", this.paper)
 
       axios
         .post("http://localhost:3000/papers/ungraded", formData)

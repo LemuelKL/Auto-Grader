@@ -19,9 +19,11 @@
         </v-row>
       </v-card-text>
       <v-card-actions>
-        <v-btn text @click="submitPreset">Submit</v-btn>
-        <v-spacer></v-spacer>
-        <v-btn text @click="$emit('update:show', false)">Cancel</v-btn>
+        <v-row class="ml-1 mr-1">
+          <v-btn text @click="submitPreset">Submit</v-btn>
+          <v-spacer></v-spacer>
+          <v-btn text @click="$emit('update:show', false)">Cancel</v-btn>
+        </v-row>
       </v-card-actions>
     </v-card>
   </v-dialog>

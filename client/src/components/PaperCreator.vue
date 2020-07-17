@@ -3,37 +3,34 @@
     <v-card outlined class="pa-3 mt-3">
       <v-card-title>Create a New Paper</v-card-title>
       <v-card-text>
-        <v-container fluid>
-          <v-row no-gutters>
-            <v-file-input
-              outlined
-              v-model="template"
-              accept=".pdf"
-              type="file"
-              label="Paper Template"
-            ></v-file-input>
-          </v-row>
+        <v-row no-gutters>
+          <v-file-input
+            outlined
+            v-model="template"
+            accept=".pdf"
+            type="file"
+            label="Paper Template"
+          ></v-file-input>
+        </v-row>
 
-          <v-row>
-            <question-register
-              :src="imageSrc"
-              :page="page"
-              :numPages="numPages"
-              :imgW="imgW"
-              :imgH="imgH"
-              @requestPage="handlePageChangeRequest"
-              :questions.sync="questions"
-            ></question-register>
-          </v-row>
+        <v-row>
+          <question-register
+            :src="imageSrc"
+            :page="page"
+            :numPages="numPages"
+            :imgW="imgW"
+            :imgH="imgH"
+            @requestPage="handlePageChangeRequest"
+            :questions.sync="questions"
+          ></question-register>
+        </v-row>
 
-          <v-row no-gutters class="pl-5 pt-5">
-            <v-btn
-              @click="submitPaper"
-              class="ml-3"
-              :disabled="!this.template || awaitingNumPagesResult"
-            >Create Paper</v-btn>
-          </v-row>
-        </v-container>
+        <v-row no-gutters class="mt-5">
+          <v-btn
+            @click="submitPaper"
+            :disabled="!this.template || awaitingNumPagesResult"
+          >Create Paper</v-btn>
+        </v-row>
       </v-card-text>
     </v-card>
   </div>
@@ -53,9 +50,9 @@ export default {
       imgsDir: "",
       imgW: 0,
       imgH: 0,
-      questions: [],  // Array of objects, see newQuestion() in child
+      questions: [], // Array of objects, see newQuestion() in child
 
-      awaitingNumPagesResult: false,
+      awaitingNumPagesResult: false
     };
   },
   methods: {
@@ -89,7 +86,7 @@ export default {
         }
       }
       if (mode >= 1 && mode < this.numPages) this.page = mode;
-    },
+    }
   },
   watch: {
     template: async function() {
@@ -112,12 +109,12 @@ export default {
     }
   },
   computed: {
-    imageSrc: function () {
+    imageSrc: function() {
       if (this.imgsDir == "") return "";
       return this.imgsDir + `/${this.page}.png`;
     },
-    numQuestions: function () {
-      return this.questions.length
+    numQuestions: function() {
+      return this.questions.length;
     }
   }
 };
