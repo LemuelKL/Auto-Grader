@@ -8,6 +8,7 @@ var Jimp = require("jimp");
 const { PDFDocument } = require('pdf-lib')
 const _ = require('underscore')
 var path = require('path');
+const Paper = require('./../models/Paper')
 
 function getDirectories(path) {
   return fs.readdirSync(path).filter(function (file) {
@@ -156,7 +157,7 @@ function QrDecode(image) {
   })
 }
 
-function complete(queue, res, pages, pdfUri, dir) {
+async function complete(queue, res, pages, pdfUri, dir) {
   if (!queue) {
     //console.log("We have completed")
     //console.log(pages)
@@ -175,15 +176,45 @@ function complete(queue, res, pages, pdfUri, dir) {
       }
       perCandidateSplit(pdfUri, candidate, pageIndices, dir)
     })
-    res.send({
-      msg: "done",
+
+    // TODO check for paperId anomaly
+
+    const paper = await Paper.findOne({ id: pages[0].paperId })
+    res.json({
+      msg: "File successfully processed.",
       paperInfo: {
-        paperId: pages[0].paperId,
+        id: paper.id,
+        name: paper.name,
+        numPages: paper.numPages,
+        width: paper.width,
+        height: paper.height,
+        questions: paper.questions,
         candidates: candidates,
+        expectedCandidates: paper.candidates,
+        // This import is missing:
+        thisLackedCandidates: lackedCandidates(paper.candidates, candidates),
+        // After this import, still missing:
+        afterLackedCandidates: 'a'
       }
     })
   }
 }
+
+function lackedCandidates(expected, got) {
+  var missing = []
+  for (let [i, c] of expected.entries()) {
+    if (got.indexOf(c) == -1) {
+      missing.push(i)
+    }
+  }
+  var pyccodes = []
+  for (let i of missing) {
+    pyccodes.push(expected[i])
+  }
+  return pyccodes
+}
+
+
 
 async function perCandidateSplit(pdfUri, candidate, pageIndices, savePath) {
   // Note: the end pdf page order follows the order of the elements of pageIndices

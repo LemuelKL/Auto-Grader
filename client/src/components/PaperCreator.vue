@@ -3,14 +3,20 @@
     <v-card outlined class="pa-3 mt-3">
       <v-card-title>Create a New Paper</v-card-title>
       <v-card-text>
-        <v-row no-gutters>
+        <v-row no-gutters class="pa-3">
           <v-file-input
             outlined
             v-model="template"
             accept=".pdf"
             type="file"
             label="Paper Template"
+            hide-details
           ></v-file-input>
+          <v-btn
+            class="ml-5"
+            @click="submitPaper"
+            :disabled="!template || awaitingNumPagesResult || questions.length == 0 || candidates.length == 0"
+          >Create Paper</v-btn>
         </v-row>
 
         <v-row no-gutters>
@@ -28,13 +34,6 @@
             :questions.sync="questions"
           ></question-register>
         </v-row>
-
-        <v-row no-gutters class="mt-5">
-          <v-btn
-            @click="submitPaper"
-            :disabled="!this.template || awaitingNumPagesResult"
-          >Create Paper</v-btn>
-        </v-row>
       </v-card-text>
     </v-card>
   </div>
@@ -50,7 +49,7 @@ export default {
   },
   data() {
     return {
-      template: null,
+      template: null, // To be submitted to API
       numPages: 0,
       page: 1,
       imgsDir: "",
@@ -59,7 +58,7 @@ export default {
       questions: [], // Array of objects, see newQuestion() in child
       candidates: [], // List of pyccodes supplied by child CandidateRegister
 
-      awaitingNumPagesResult: false
+      awaitingNumPagesResult: false // Result from API
     };
   },
   methods: {

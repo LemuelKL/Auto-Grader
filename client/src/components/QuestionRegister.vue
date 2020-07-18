@@ -51,6 +51,8 @@
               </v-btn>
               <span>P. {{page}}</span>
               <v-spacer></v-spacer>
+              <v-divider vertical></v-divider>
+              <v-spacer></v-spacer>
               <span>{{maxWidth}}%</span>
               <v-btn fab small class="ma-1" @click="zoom('+')">
                 <v-icon>mdi-magnify-plus</v-icon>
