@@ -53,7 +53,7 @@
               <v-divider></v-divider>
 
               <v-list dense>
-                <v-list-item v-for="(key, index) in filteredKeys" :key="index">
+                <v-list-item v-for="(key, index) in filteredKeys(item)" :key="index">
                   <v-list-item-content :class="{ 'blue--text': sortBy === key }">{{ key }}:</v-list-item-content>
                   <v-list-item-content
                     class="align-end"
@@ -62,8 +62,19 @@
                 </v-list-item>
               </v-list>
               <v-card-actions>
-                <v-btn text @click="editPreset(item._id)">Edit</v-btn>
-                <v-btn text @click="deleteRemark(item._id)">Delete</v-btn>
+                <v-row no-gutters align="center">
+                  <v-btn text @click="editPreset(item._id)">Edit</v-btn>
+                  <v-btn text @click="deletePreset(item._id)">Delete</v-btn>
+                  <v-alert
+                    :ref="`${item._id}-delete`"
+                    text
+                    dense
+                    type="error"
+                    transition="slide-x-transition"
+                    :value="false"
+                    class="mb-0 ml-1"
+                  >Preset already in-use.</v-alert>
+                </v-row>
               </v-card-actions>
             </v-card>
           </v-col>
@@ -140,7 +151,7 @@ export default {
       page: 1,
       itemsPerPage: 4,
       sortBy: "name",
-      keys: ["Name", "Description", "Paper"],
+      keys: ["Name", "Description", "Paper", "Question"],
       presets: [],
 
       // Props for PresetDialog
@@ -153,12 +164,19 @@ export default {
   computed: {
     numberOfPages() {
       return Math.ceil(this.presets.length / this.itemsPerPage);
-    },
-    filteredKeys() {
-      return this.keys.filter(key => key !== `Name`);
     }
   },
   methods: {
+    filteredKeys(item) {
+      // Field appears if filter() is supplied with True
+      console.log(item);
+      return this.keys.filter(
+        key =>
+          key == "Description" ||
+          (key === "Paper" && item.paperId != "") ||
+          (key === "Question" && item.question != "")
+      );
+    },
     nextPage() {
       if (this.page + 1 <= this.numberOfPages) this.page += 1;
     },
@@ -189,13 +207,7 @@ export default {
         .then(async data => {
           this.presets = [];
           for (let d of data) {
-            var r = {
-              name: "",
-              description: "",
-              paper: "",
-              paperId: "",
-              _id: ""
-            };
+            var r = {};
             r.name = d.name;
             r.description = d.description;
             r._id = d._id;
@@ -204,6 +216,9 @@ export default {
               r.paper = `${await this.fetchPaperNameById(d.paperId)} - ${
                 d.paperId
               }`;
+            }
+            if (d.questionName != "") {
+              r.question = d.questionName;
             }
             this.presets.push(r);
           }
@@ -219,13 +234,27 @@ export default {
       this.preset = this.presets.find(r => r._id == this.presetId);
       this.presetDialog = true;
     },
-    deleteRemark(_id) {
-      axios.delete(`http://localhost:3000/presets/${_id}`).then(response => {
-        if (response.status == 200) console.log("Good");
-        const index = this.presets.findIndex(p => p._id === _id)
-        this.presets.splice(index, 1)
-        // this.fetchPresets();
-      });
+    deletePreset(_id) {
+      // Check if preset is already in-use in Papers
+      axios
+        .get(`http://localhost:3000/presets/${_id}/gradings`)
+        .then(response => response.data)
+        .then(data => {
+          if (data.length != 0) {
+            this.$refs[`${_id}-delete`][0].value = true;
+            setTimeout(() => {
+              this.$refs[`${_id}-delete`][0].value = false;
+            }, 1000)
+          } else {
+            axios
+              .delete(`http://localhost:3000/presets/${_id}`)
+              .then(response => {
+                if (response.status == 200) console.log("Good");
+                const index = this.presets.findIndex(p => p._id === _id);
+                this.presets.splice(index, 1);
+              });
+          }
+        });
     },
     async updatePresetVisual(newPreset) {
       var index = this.presets.findIndex(r => r._id == newPreset._id);
@@ -234,8 +263,8 @@ export default {
           newPreset.paperId
         )} - ${newPreset.paperId}`;
       }
-      console.log(index, newPreset)
-      this.$set(this.presets, index, newPreset) // Vue's reactivity for Array https://vuejs.org/v2/guide/reactivity.html#For-Arrays
+      console.log(index, newPreset);
+      this.$set(this.presets, index, newPreset); // Vue's reactivity for Array https://vuejs.org/v2/guide/reactivity.html#For-Arrays
     },
     async spawnPreset(newPreset) {
       if (newPreset.paperId != "") {

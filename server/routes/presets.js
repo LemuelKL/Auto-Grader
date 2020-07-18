@@ -1,6 +1,7 @@
 const express = require('express')
 const router = express.Router()
 const Preset = require('./../models/Preset')
+const Grading = require('./../models/Grading')
 
 router.get('/presets', async (req, res) => {
   try {
@@ -11,7 +12,7 @@ router.get('/presets', async (req, res) => {
   }
 })
 
-router.get('/presets/:paperId', async (req, res) => {
+router.get('/presets/paper/:paperId', async (req, res) => {
   try {
     const presets = await Preset.find().or([{paperId: req.params.paperId}, {paperId: ''}])  // To include "global" presets as well
     res.json(presets)
@@ -20,10 +21,19 @@ router.get('/presets/:paperId', async (req, res) => {
   }
 })
 
+router.get('/presets/paper/:paperId/question/:questionName', async (req, res) => {
+  try {
+    const presets = await Preset.find().or([{paperId: req.params.paperId, questionName: req.params.questionName}, {paperId: ''}])
+    res.json(presets)
+  } catch (err) {
+    res.json({ msg: err })
+  }
+})
 
 router.post('/presets', (req, res) => {
   const preset = new Preset({
     paperId: req.body.paperId,
+    questionName: req.body.questionName,
     name: req.body.name,
     description: req.body.description,
   })
@@ -47,6 +57,16 @@ router.put('/presets/:_id', async (req, res) => {
         res.json(doc)
       }
     })
+  } catch (err) {
+    res.json({ msg: err })
+  }
+})
+
+// Return Gradings that the given preset is used in
+router.get('/presets/:_id/gradings', async (req, res) => {
+  try {
+    const gradings = await Grading.find({ presetRemark: req.params._id })
+    res.json(gradings)
   } catch (err) {
     res.json({ msg: err })
   }
