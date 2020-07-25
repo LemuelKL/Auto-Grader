@@ -130,6 +130,7 @@ export default {
     paperSpecific: function(val) {
       if (val == false) {
         this.specifiedPaperId = "";
+        this.questionSpecific = false;
       }
     },
 

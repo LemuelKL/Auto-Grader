@@ -1,6 +1,6 @@
 <template>
   <v-card outlined>
-    <v-card-text v-if="!!paperId">
+    <v-card-text>
       <v-row no-gutters class="font-weight-bold text--primary" align="center">
         <div>{{ candidate.class }}</div>
         <div class="ml-1">({{ candidate.classNo }})</div>
@@ -30,7 +30,6 @@
         </v-chip-group>
         <v-chip v-else>?</v-chip>
         <v-spacer></v-spacer>
-
       </v-row>
       <v-divider class="my-1"></v-divider>
       <v-row no-gutters>
@@ -63,7 +62,12 @@
       </v-row>
     </v-card-text>
     <v-card-actions>
-      <v-btn elevation="0" dark :color="`${graded?'light-green':'green '}`" @click="submitGrading">{{graded?'Update':'Submit'}}</v-btn>
+      <v-btn
+        elevation="0"
+        dark
+        :color="`${graded?'light-green':'green '}`"
+        @click="submitGrading"
+      >{{graded?'Update':'Submit'}}</v-btn>
     </v-card-actions>
   </v-card>
 </template>
@@ -134,14 +138,16 @@ export default {
       this.$set(this.grading, "score", score);
     },
 
-    // Get Global Presets or those belong to this Paper
     fetchPresets() {
-      axios
-        .get(`http://localhost:3000/presets/paper/${this.paperId}`)
+      if (!!this.paperId && !!this.questionName) {
+        axios
+        .get(`http://localhost:3000/presets/paper/${this.paperId}/question/${this.questionName}`)
         .then((response) => response.data)
         .then((data) => {
-          this.presets = data;
+          this.presets = _.cloneDeep(data);
         });
+      }
+      
     },
     fetchGrading() {
       if (!!this.paperId && !!this.questionName && this.candidate.pyccode) {
@@ -170,9 +176,8 @@ export default {
   },
 
   watch: {
-    paperId: "fetchPresets",
     candidate: "fetchGrading",
-    questionName: "fetchGrading",
+    questionName: ["fetchGrading","fetchPresets"],
     candidateIndex() {
       this.updateCandidate();
     },

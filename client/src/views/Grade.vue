@@ -17,6 +17,7 @@
           </div>
         </v-card>
         <grading-panel
+          v-show="!!paperId"
           :candidates="candidates"
           @candidate-updated="candidateId = $event.pyccode"
           :paperId="paperId"
@@ -71,7 +72,7 @@ export default {
       // For pdf-viewer
       page: 1,
       zoom: 100,
-      width: 500,
+      width: 595,
 
       paperId: "",
       candidateId: "",
@@ -92,7 +93,7 @@ export default {
         {
           name: "",
           score: 0,
-          pos: { sx: "", sy: "", sheight: "" },
+          pos: { sx: "0", sy: "0", sheight: "842" },
         },
       ],
     };

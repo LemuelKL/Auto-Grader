@@ -23,7 +23,7 @@ router.get('/presets/paper/:paperId', async (req, res) => {
 
 router.get('/presets/paper/:paperId/question/:questionName', async (req, res) => {
   try {
-    const presets = await Preset.find().or([{paperId: req.params.paperId, questionName: req.params.questionName}, {paperId: ''}])
+    const presets = await Preset.find().or([{paperId: req.params.paperId, questionName: req.params.questionName}, {paperId: ''}, {paperId: req.params.paperId, questionName: ''}])
     res.json(presets)
   } catch (err) {
     res.json({ msg: err })

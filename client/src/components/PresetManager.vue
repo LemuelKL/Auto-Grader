@@ -172,7 +172,7 @@ export default {
       console.log(item);
       return this.keys.filter(
         key =>
-          key == "Description" ||
+          (key === "Description" && item.description != "") ||
           (key === "Paper" && item.paperId != "") ||
           (key === "Question" && item.question != "")
       );
@@ -217,9 +217,12 @@ export default {
                 d.paperId
               }`;
             }
+            else r.paper = ""
+            r.questionName = d.questionName;
             if (d.questionName != "") {
               r.question = d.questionName;
             }
+            else r.question = ""
             this.presets.push(r);
           }
         });
@@ -263,7 +266,9 @@ export default {
           newPreset.paperId
         )} - ${newPreset.paperId}`;
       }
-      console.log(index, newPreset);
+      if (newPreset.questionName != "") {
+        newPreset.question = newPreset.questionName;
+      }
       this.$set(this.presets, index, newPreset); // Vue's reactivity for Array https://vuejs.org/v2/guide/reactivity.html#For-Arrays
     },
     async spawnPreset(newPreset) {
