@@ -40,6 +40,7 @@
         ></paper-panel>
 
         <question-panel
+          v-show="!!paperId"
           :questions="questions"
           @questionChanged="questionName = $event.name; questionScore = $event.score"
           ref="qp"

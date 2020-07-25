@@ -18,7 +18,7 @@
       <v-row no-gutters align="start" class="mt-2">
         <v-col cols="12">
           <v-card outlined>
-            <v-card-text class="font-weight-bold">
+            <v-card-text v-if="paperId" class="font-weight-bold">
               <v-row no-gutters justify="center">
                 <v-col cols="4">
                   <v-row no-guttes class="pl-2 pt-2 pr-2 pb-0 font-weight-bold">

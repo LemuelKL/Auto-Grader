@@ -15,13 +15,13 @@ router.get('/gradings/:paperId/:questionName/:candidate', async (req, res) => {
 
 router.put('/gradings', (req, res) => {
   console.log("Received request for Creating/Updating Grading")
-  Grading.findOneAndUpdate({ paperId: req.body.paperId, questionName: req.body.questionName, candidate: req.body.candidate }, req.body, { upsert: true, new: true, runValidators: true,useFindAndModify: false }, function (err, doc) {
+  Grading.findOneAndUpdate({ paperId: req.body.paperId, questionName: req.body.questionName, candidate: req.body.candidate }, req.body, { upsert: true, new: true, fields: { "_id":0, "__v": 0 }, runValidators: true,useFindAndModify: false }, function (err, doc) {
     if (err) {
       res.status(500).send()
     }
     else {
       console.log("Successfully created/updated Grading document: ", doc)
-      res.status(200).send()
+      res.json(doc)
     }
   })
 })

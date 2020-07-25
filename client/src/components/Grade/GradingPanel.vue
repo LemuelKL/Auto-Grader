@@ -9,6 +9,8 @@
         <v-divider vertical class="mx-2"></v-divider>
         <div>{{ candidate.cname }}</div>
         <v-spacer></v-spacer>
+        {{`${this.graded?'Graded':'NOT Graded'}`}}
+        <v-divider vertical class="mx-2"></v-divider>
         <v-btn elevation="0" small @click="previousCandidate">
           <v-icon>mdi-arrow-left</v-icon>
         </v-btn>
@@ -20,7 +22,6 @@
       <v-divider class="my-1"></v-divider>
       <v-row no-gutters>
         <v-chip-group
-          v-if="graded"
           :value="grading.score"
           @change="updateScore($event)"
           active-class="primary"
@@ -28,7 +29,6 @@
         >
           <v-chip v-for="score in scoreChips" :key="score" :value="score">{{ score }}</v-chip>
         </v-chip-group>
-        <v-chip v-else>?</v-chip>
         <v-spacer></v-spacer>
       </v-row>
       <v-divider class="my-1"></v-divider>
@@ -68,6 +68,14 @@
         :color="`${graded?'light-green':'green '}`"
         @click="submitGrading"
       >{{graded?'Update':'Submit'}}</v-btn>
+      <v-alert
+        text
+        dense
+        :type="submissionResultType"
+        transition="slide-x-transition"
+        :value="submissionResultAlert"
+        class="mb-0 ml-1"
+      >{{submissionResultText}}</v-alert>
     </v-card-actions>
   </v-card>
 </template>
@@ -86,14 +94,6 @@ export default {
     return {
       candidateIndex: 0,
       candidate: { pyccode: "", name: "", class: "", classNo: "" },
-      defaultGrading: {
-        presetRemark: [],
-        candidate: "",
-        paperId: "",
-        questionName: "",
-        customRemark: "",
-        score: 0,
-      },
       grading: {
         presetRemark: [],
         candidate: "",
@@ -102,15 +102,28 @@ export default {
         customRemark: "",
         score: 0,
       },
-
       graded: false,
-
       presets: [],
+      preventSubmission: false,
+
+      submissionResultText: "",
+      submissionResultAlert: false,
+      submissionResultType: "success",
     };
   },
   computed: {
     scoreChips() {
       return [...Array(this.questionScore + 1).keys()];
+    },
+    defaultGrading() {
+      return {
+        presetRemark: [],
+        candidate: this.candidate.pyccode,
+        paperId: this.paperId,
+        questionName: this.questionName,
+        customRemark: "",
+        score: 0,
+      };
     },
   },
   methods: {
@@ -125,8 +138,8 @@ export default {
       }
     },
     updateCandidate() {
-      this.candidate = this.candidates[this.candidateIndex];
-      this.$emit('candidate-updated', this.candidates[this.candidateIndex])
+      this.candidate = _.cloneDeep(this.candidates[this.candidateIndex]);
+      this.$emit("candidate-updated", this.candidates[this.candidateIndex]);
     },
     updateTags(tags) {
       this.grading.presetRemark = _.cloneDeep(tags);
@@ -141,22 +154,24 @@ export default {
     fetchPresets() {
       if (!!this.paperId && !!this.questionName) {
         axios
-        .get(`http://localhost:3000/presets/paper/${this.paperId}/question/${this.questionName}`)
-        .then((response) => response.data)
-        .then((data) => {
-          this.presets = _.cloneDeep(data);
-        });
+          .get(
+            `http://localhost:3000/presets/paper/${this.paperId}/question/${this.questionName}`
+          )
+          .then((response) => response.data)
+          .then((data) => {
+            this.presets = _.cloneDeep(data);
+          });
       }
-      
     },
     fetchGrading() {
-      if (!!this.paperId && !!this.questionName && this.candidate.pyccode) {
+      if (!!this.paperId && !!this.questionName && !!this.candidate.pyccode) {
         axios
           .get(
             `http://localhost:3000/gradings/${this.paperId}/${this.questionName}/${this.candidate.pyccode}`
           )
           .then((response) => response.data)
           .then((data) => {
+            this.preventSubmission = true;
             if (data != null) {
               this.grading = _.cloneDeep(data);
               this.graded = true;
@@ -167,21 +182,46 @@ export default {
           });
       }
     },
+    debounceSubmitGrading: _.debounce(function () {
+      this.submitGrading();
+    }, 500),
     submitGrading() {
+      if (this.preventSubmission) return (this.preventSubmission = false);
       // Called when Update as well
-      axios.put("http://localhost:3000/gradings", this.grading).catch((err) => {
-        console.error(err);
-      });
+      axios
+        .put("http://localhost:3000/gradings", this.grading)
+        .then((res) => {
+          if (res.status == 200) {
+            this.submissionResultAlert = "success";
+            this.submissionResultText = "Grading saved on DB.";
+            this.submissionResultAlert = true;
+            setTimeout(() => {
+              this.submissionResultAlert = false;
+            }, 1000);
+            if (_.isEqual(res.data, JSON.parse(JSON.stringify(this.grading)))) {
+              this.graded = true
+            }
+          }
+        })
+        .catch((err) => {
+          console.error(err);
+          this.submissionResultAlert = "error";
+          this.submissionResultText = "Error occured.";
+          this.submissionResultAlert = true;
+          setTimeout(() => {
+            this.submissionResultAlert = false;
+          }, 1000);
+        });
     },
   },
 
   watch: {
     candidate: "fetchGrading",
-    questionName: ["fetchGrading","fetchPresets"],
+    questionName: ["fetchGrading", "fetchPresets"],
     candidateIndex() {
       this.updateCandidate();
     },
-    grading: { handler: "submitGrading", deep: true }, // TODO: add debounce
+    grading: { handler: "debounceSubmitGrading", deep: true },
   },
 };
 </script>
