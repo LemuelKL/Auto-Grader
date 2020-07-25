@@ -269,6 +269,7 @@ export default {
       if (newPreset.questionName != "") {
         newPreset.question = newPreset.questionName;
       }
+      else newPreset.question = "";
       this.$set(this.presets, index, newPreset); // Vue's reactivity for Array https://vuejs.org/v2/guide/reactivity.html#For-Arrays
     },
     async spawnPreset(newPreset) {
@@ -277,6 +278,10 @@ export default {
           newPreset.paperId
         )} - ${newPreset.paperId}`;
       }
+      if (newPreset.questionName != "") {
+        newPreset.question = newPreset.questionName;
+      }
+      else newPreset.question = "";
       this.presets.push(newPreset);
     }
   },
