@@ -9,6 +9,7 @@ const { PDFDocument } = require('pdf-lib')
 const _ = require('underscore')
 var path = require('path');
 const Paper = require('./../models/Paper')
+const Student = require('./../models/Student')
 
 function getDirectories(path) {
   return fs.readdirSync(path).filter(function (file) {
@@ -26,12 +27,14 @@ router.get('/papers/ungraded', (req, res) => {
 
 router.get('/papers/ungraded/:id/students', (req, res) => {
   try {
-    fs.readdir(`${process.cwd()}/public/ungraded/${req.params.id}`, { withFileTypes: true }, (err, dirents) => {
+    fs.readdir(`${process.cwd()}/public/ungraded/${req.params.id}`, { withFileTypes: true }, async (err, dirents) => {
       if (err) throw err
       const filesNames = dirents
         .filter(dirent => dirent.isFile())
         .map(dirent => path.parse(dirent.name).name);
-      res.json(filesNames)
+
+      students = await Student.find().where('pyccode').in(filesNames).exec();
+      res.json(students)
     })
   } catch (err) {
     res.json({ msg: err })
