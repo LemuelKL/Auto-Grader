@@ -27,8 +27,7 @@ router.put('/gradings', (req, res) => {
 })
 
 router.put('/gradingImages/:paperId/:questionName/:candidate', (req, res) => {
-  console.log("Received request for Creating/Updating Grading Image")
-  console.log(req)
+  console.log("Received request for Updating Grading Image")
   var base64Data = req.body.image.split(',')[1];
   const baseDir = `${process.cwd()}/public/graded/${req.params.paperId}/${req.params.candidate}`
   require("fs").writeFile(`${baseDir}/${req.params.questionName}.png`, base64Data, 'base64', function (err) {
