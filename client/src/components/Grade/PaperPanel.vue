@@ -47,15 +47,10 @@
 
             <v-card-actions>
               <v-row no-gutters align="center">
-                <v-btn elevation="0" class="ma-2" @click="previousPage()">
-                  <v-icon>mdi-arrow-left-thick</v-icon>
-                </v-btn>
                 <v-card outlined width="64" height="36">
                   <v-card-title class="pa-0 justify-center">{{page}}</v-card-title>
                 </v-card>
-                <v-btn elevation="0" class="ma-2" @click="nextPage()">
-                  <v-icon>mdi-arrow-right-thick</v-icon>
-                </v-btn>
+                <v-switch :value="panMode" @change="$emit('panModeUpdated', $event)" label="Pan Mode"></v-switch>
                 <v-spacer></v-spacer>
                 <v-btn elevation="0" class="ma-2" @click="zoomIn()">
                   <v-icon>mdi-magnify-plus</v-icon>
@@ -81,6 +76,7 @@ export default {
   props: {
     page: Number,
     zoom: Number,
+    panMode: Boolean
   },
   data() {
     return {
@@ -103,23 +99,13 @@ export default {
   },
 
   methods: {
-    previousPage() {
-      if (this.page > 1) {
-        this.$emit("update:page", this.page - 1);
-      }
-    },
-    nextPage() {
-      if (this.page < this.numPages) {
-        this.$emit("update:page", this.page + 1);
-      }
-    },
     zoomIn() {
-      if (this.zoom < 250) this.zoom = this.zoom + 10;
-      this.$emit("update:zoom", this.zoom);
+      if (this.zoom < 300);
+      this.$emit("requestZoomIn");
     },
     zoomOut() {
-      if (this.zoom > 10) this.zoom = this.zoom - 10;
-      this.$emit("update:zoom", this.zoom);
+      if (this.zoom > 50);
+      this.$emit("requestZoomOut");
     },
 
     handlePaperChanged(paperId) {
