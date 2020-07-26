@@ -1,6 +1,16 @@
 client/node_modules
 server/node_modules
+gclassroom
+gclassroom/node_modules
 AutoGrader.code-workspace
 todo.txt
 server/.env
 *self.ico
+credentials.json
+token.json
+worker-authkey.json
+server/public/graded/*
+server/public/ungraded/*
+server/public/img/*
+server/public/papers/*
+server/tmp
