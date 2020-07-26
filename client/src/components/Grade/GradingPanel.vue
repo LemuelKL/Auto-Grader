@@ -20,7 +20,7 @@
         </v-btn>
       </v-row>
       <v-divider class="my-1"></v-divider>
-      <v-row no-gutters>
+      <v-row no-gutters align="center">
         <v-chip-group
           :value="grading.score"
           @change="updateScore($event)"
@@ -190,18 +190,30 @@ export default {
       // Called when Update as well
       axios
         .put("http://localhost:3000/gradings", this.grading)
-        .then((res) => {
-          if (res.status == 200) {
-            this.submissionResultAlert = "success";
-            this.submissionResultText = "Grading saved on DB.";
-            this.submissionResultAlert = true;
-            setTimeout(() => {
-              this.submissionResultAlert = false;
-            }, 1000);
-            if (_.isEqual(res.data, JSON.parse(JSON.stringify(this.grading)))) {
-              this.graded = true
-            }
-          }
+        .then(() => {
+          const drawingBase64 = this.$parent.$refs.tuiImageEditor.invoke(
+            "toDataURL"
+          );
+          axios
+            .put(
+              `http://localhost:3000/gradingImages/${this.grading.paperId}/${this.grading.questionName}/${this.grading.candidate}`,
+              { image: drawingBase64 }
+            )
+            .then((res) => {
+              if (res.status == 200) {
+                this.submissionResultAlert = "success";
+                this.submissionResultText = "Grading saved on DB.";
+                this.submissionResultAlert = true;
+                setTimeout(() => {
+                  this.submissionResultAlert = false;
+                }, 1000);
+                if (
+                  _.isEqual(res.data, JSON.parse(JSON.stringify(this.grading)))
+                ) {
+                  this.graded = true;
+                }
+              }
+            });
         })
         .catch((err) => {
           console.error(err);

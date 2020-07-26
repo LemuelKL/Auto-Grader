@@ -3,18 +3,7 @@
     <v-row no-gutters>
       <v-col cols="8" order="1">
         <v-card outlined class="ma-2">
-          <div
-            class="pdf-viewer-wrapper"
-            v-dragscroll="true"
-            v-autoscroll:arg="{ x: questionRegion.sx * zoom / 100, y: questionRegion.sy * zoom / 100, type: 'absolute'}"
-            :style="`max-height: ${ questionRegion.sheight * zoom / 100 }px;`"
-          >
-            <pdf-viewer
-              :src="pdfUrl"
-              :page="page"
-              :style="`width: ${width*zoom/100}px; margin: auto`"
-            ></pdf-viewer>
-          </div>
+          <tui-image-editor ref="tuiImageEditor" :include-ui="useDefaultUI" :options="options"></tui-image-editor>
         </v-card>
         <grading-panel
           v-show="!!paperId"
@@ -52,7 +41,10 @@
 </template>
 
 <script>
-import Pdf from "vue-pdf";
+import { ImageEditor } from "@toast-ui/vue-image-editor";
+import "tui-color-picker/dist/tui-color-picker.css";
+import "tui-image-editor/dist/tui-image-editor.css";
+//import Pdf from "vue-pdf";
 import { dragscroll } from "vue-dragscroll";
 import PaperPanel from "./../components/Grade/PaperPanel";
 import QuestionPanel from "./../components/Grade/QuestionPanel";
@@ -60,7 +52,8 @@ import GradingPanel from "./../components/Grade/GradingPanel";
 
 export default {
   components: {
-    "pdf-viewer": Pdf,
+    "tui-image-editor": ImageEditor,
+    //"pdf-viewer": Pdf,
     "paper-panel": PaperPanel,
     "question-panel": QuestionPanel,
     "grading-panel": GradingPanel,
@@ -69,7 +62,75 @@ export default {
     dragscroll,
   },
   data() {
+    var whiteTheme = {
+      "common.bi.image": "",
+      "common.bisize.width": "0px",
+      "common.bisize.height": "0px",
+      "header.backgroundColor": "transparent",
+      "common.backgroundColor": "#EEEEEE",
+      "submenu.backgroundColor": "#f5f5f5",
+
+      "menu.normalIcon.color": "#434343",
+      "menu.activeIcon.color": "#000000",
+      "menu.disabledIcon.color": "#9E9E9E",
+      "menu.hoverIcon.color": "#2196F3",
+
+      "submenu.normalIcon.color": "#434343",
+      "submenu.activeIcon.color": "#000000",
+      "submenu.normalLabel.color": "#000000",
+      "submenu.normalLabel.fontWeight": "regular",
+      "submenu.activeLabel.color": "#000000",
+      "submenu.activeLabel.fontWeight": "bold",
+
+      // rango style
+      "range.pointer.color": "#2196F3",
+      "range.subbar.color": "#666",
+      "range.bar.color": "#d1d1d1",
+
+      "range.value.color": "#000000",
+      "range.value.fontWeight": "lighter",
+      "range.value.fontSize": "11px",
+      "range.value.border": "1px solid #353535",
+      "range.value.backgroundColor": "#f5f5f5",
+      "range.title.color": "#000000",
+      "range.title.fontWeight": "regular",
+
+      // colorpicker style
+      "colorpicker.button.border": "1px solid #1e1e1e",
+      "colorpicker.title.color": "#000000",
+    };
     return {
+      // For vue-image-editor
+      useDefaultUI: true,
+      options: {
+        // for tui-image-editor component's "options" prop
+        usageStatistics: false,
+        cssMaxWidth: 1000,
+        cssMaxHeight: 1000,
+        selectionStyle: {
+          cornerStyle: 'circle',
+          cornerSize: 10,
+          cornerColor: '#000000',
+          cornerStrokeColor: '#000000',
+          transparentCorners: false,
+          lineWidth: 1,
+          borderColor: '#000000'
+        },
+        includeUI: {
+          uiSize: {
+            width: "auto",
+            height: "550px",
+          },
+          menu: ["draw", "shape", "icon", "text"],
+          loadImage: {
+            path: "http://localhost:3000/graded/welcome.jpg",
+            name: "welcome",
+          },
+          theme: whiteTheme,
+          menuBarPosition: "right",
+        },
+      },
+
       // For pdf-viewer
       page: 1,
       zoom: 100,
@@ -100,21 +161,28 @@ export default {
     };
   },
   computed: {
-    pdfUrl: function () {
-      if (this.candidateId == "")
-        return "http://localhost:3000/welcome.pdf";
-      else
-        return `http://localhost:3000/ungraded/${this.paperId}/${this.candidateId}.pdf`;
-    },
     questionRegion: function () {
       return this.questions.find((q) => q.name == this.questionName).pos;
     },
+    imageUrl() {
+      if (!this.paperId || !this.candidateId || !this.questionName) return "";
+      return `http://localhost:3000/graded/${this.paperId}/${this.candidateId}/${this.questionName}.png`;
+    },
   },
   watch: {
-    questionName (val) {
-      this.page = this.questions.find(q => q.name == val).page
-    }
-  }
+    questionName(val) {
+      this.page = this.questions.find((q) => q.name == val).page;
+    },
+    imageUrl(val) {
+      if (val != "") {
+        this.$refs.tuiImageEditor.invoke(
+          "loadImageFromURL",
+          `${val}?t=${new Date().getTime()}`, // Add this query to force the browser to re-request and not re-use cache  
+          `${this.candidateId} - ${this.questionName}`
+        );
+      }
+    },
+  },
 };
 </script>
 
@@ -123,5 +191,17 @@ export default {
   overflow: hidden; // Very important
   background-color: bisque;
   cursor: grab;
+}
+.tui-image-editor-header {
+  display: none;
+}
+.tui-image-editor-container .tui-image-editor-main {
+  top: 0;
+}
+.tui-image-editor-container .tui-image-editor-controls {
+  background-color: #f5f5f5;
+}
+.tui-image-editor-container .tui-image-editor-range-wrap label {
+  color: #000000
 }
 </style>

@@ -153,8 +153,6 @@ export default {
           this.candidates = data.candidates;
           this.numPages = data.numPages;
           this.questions = data.questions;
-          console.log(typeof data.questions[0].score);
-          console.log(data.questions);
           this.$emit("questionsArrived", data.questions);
           this.$emit("updatePaperWidth", data.width);
         });

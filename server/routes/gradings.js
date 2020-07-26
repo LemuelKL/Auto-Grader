@@ -15,7 +15,7 @@ router.get('/gradings/:paperId/:questionName/:candidate', async (req, res) => {
 
 router.put('/gradings', (req, res) => {
   console.log("Received request for Creating/Updating Grading")
-  Grading.findOneAndUpdate({ paperId: req.body.paperId, questionName: req.body.questionName, candidate: req.body.candidate }, req.body, { upsert: true, new: true, fields: { "_id":0, "__v": 0 }, runValidators: true,useFindAndModify: false }, function (err, doc) {
+  Grading.findOneAndUpdate({ paperId: req.body.paperId, questionName: req.body.questionName, candidate: req.body.candidate }, req.body, { upsert: true, new: true, fields: { "_id": 0, "__v": 0 }, runValidators: true, useFindAndModify: false }, function (err, doc) {
     if (err) {
       res.status(500).send()
     }
@@ -24,6 +24,17 @@ router.put('/gradings', (req, res) => {
       res.json(doc)
     }
   })
+})
+
+router.put('/gradingImages/:paperId/:questionName/:candidate', (req, res) => {
+  console.log("Received request for Creating/Updating Grading Image")
+  console.log(req)
+  var base64Data = req.body.image.split(',')[1];
+  const baseDir = `${process.cwd()}/public/graded/${req.params.paperId}/${req.params.candidate}`
+  require("fs").writeFile(`${baseDir}/${req.params.questionName}.png`, base64Data, 'base64', function (err) {
+    if (err) res.status(500).send()
+    res.status(200).send()
+  });
 })
 
 module.exports = router

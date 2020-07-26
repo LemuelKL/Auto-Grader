@@ -29,11 +29,11 @@ router.get('/papers/ungraded/:id/students', (req, res) => {
   try {
     fs.readdir(`${process.cwd()}/public/ungraded/${req.params.id}`, { withFileTypes: true }, async (err, dirents) => {
       if (err) throw err
-      const filesNames = dirents
-        .filter(dirent => dirent.isFile())
+      const dirsNames = dirents
+        .filter(dirent => !dirent.isFile())
         .map(dirent => path.parse(dirent.name).name);
 
-      students = await Student.find().where('pyccode').in(filesNames).exec();
+      students = await Student.find().where('pyccode').in(dirsNames).exec();
       res.json(students)
     })
   } catch (err) {
@@ -197,7 +197,7 @@ async function complete(queue, res, pages, pdfUri, dir) {
         // This import is missing:
         thisLackedCandidates: lackedCandidates(paper.candidates, candidates),
         // After this import, still missing:
-        afterLackedCandidates: 'a'
+        afterLackedCandidates: 'a'  // TODO
       }
     })
   }
@@ -217,8 +217,6 @@ function lackedCandidates(expected, got) {
   return pyccodes
 }
 
-
-
 async function perCandidateSplit(pdfUri, candidate, pageIndices, savePath) {
   // Note: the end pdf page order follows the order of the elements of pageIndices
   const donorPdfDoc = await PDFDocument.load(fs.readFileSync(pdfUri))
@@ -230,7 +228,25 @@ async function perCandidateSplit(pdfUri, candidate, pageIndices, savePath) {
     pdfDoc.addPage(page)
   }
 
-  fs.writeFileSync(`${savePath}/${candidate}.pdf`, await pdfDoc.save())
+  const paperId = savePath.split('/').pop()
+  const questions = (await Paper.findOne({id: paperId}, 'questions')).questions
+
+  const dir = `${savePath}/${candidate}`
+  fs.mkdir(dir, { recursive: true }, async (err) => {
+    if (err) return console.error(err);
+    fs.writeFileSync(`${dir}/attempt.pdf`, await pdfDoc.save())
+    // Lemuel is so smart OMG!
+    Pdf2Img(`${savePath}/${candidate}/attempt.pdf`).then(pageImages => {
+      questions.forEach(q => {
+        Jimp.read(pageImages[q.page - 1], async function (err, image) {
+          if (err) return console.error(err);
+          image.crop(q.pos.sx, q.pos.sy, q.pos.swidth, q.pos.sheight)
+          await image.writeAsync(`${savePath}/${candidate}/${q.name}.png`)
+          await image.writeAsync(`${savePath.replace('ungraded', 'graded')}/${candidate}/${q.name}.png`)
+        })
+      })
+    })
+  })
 }
 
 module.exports = router

@@ -9,6 +9,7 @@
     "start": "cls && vue-cli-service serve"
   },
   "dependencies": {
+    "@toast-ui/vue-image-editor": "^1.2.0",
     "axios": "^0.19.2",
     "core-js": "^3.6.5",
     "cropperjs": "^1.5.7",
