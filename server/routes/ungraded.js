@@ -77,7 +77,7 @@ router.post('/papers/ungraded', (req, res) => {
       return res.status(500).send({ msg: "Error occured" });
     }
     else {
-      var imageDatas = await Pdf2Img(pdfUri)  // Buffers
+      var imageDatas = await Pdf2Img(pdfUri, 1)  // Buffers
       var pages = []
       var queue = 0
       for (let i = 1; i <= imageDatas.length; i++) {
@@ -112,7 +112,7 @@ router.post('/papers/ungraded', (req, res) => {
   })
 })
 
-function Pdf2Img(pdfUri) {
+function Pdf2Img(pdfUri, scale) {
   return new Promise(async (resolve, reject) => {
     var rawData = new Uint8Array(fs.readFileSync(pdfUri));
 
@@ -124,7 +124,7 @@ function Pdf2Img(pdfUri) {
     var imageDatas = []
     for (i = 1; i <= numPages; i++) {
       await pdfDocument.getPage(i).then(async page => {
-        const viewport = page.getViewport({ scale: 1.0 });
+        const viewport = page.getViewport({ scale: scale });
         const canvasFactory = new NodeCanvasFactory();
         const canvasAndContext = canvasFactory.create(
           viewport.width,
@@ -236,11 +236,12 @@ async function perCandidateSplit(pdfUri, candidate, pageIndices, savePath) {
     if (err) return console.error(err);
     fs.writeFileSync(`${dir}/attempt.pdf`, await pdfDoc.save())
     // Lemuel is so smart OMG!
-    Pdf2Img(`${savePath}/${candidate}/attempt.pdf`).then(pageImages => {
+    const scale = 2
+    Pdf2Img(`${savePath}/${candidate}/attempt.pdf`, scale).then(pageImages => {
       questions.forEach(q => {
         Jimp.read(pageImages[q.page - 1], async function (err, image) {
           if (err) return console.error(err);
-          image.crop(q.pos.sx, q.pos.sy, q.pos.swidth, q.pos.sheight)
+          image.crop(q.pos.sx*scale, q.pos.sy*scale, q.pos.swidth*scale, q.pos.sheight*scale)
           await image.writeAsync(`${savePath}/${candidate}/${q.name}.png`)
           await image.writeAsync(`${savePath.replace('ungraded', 'graded')}/${candidate}/${q.name}.png`)
         })
