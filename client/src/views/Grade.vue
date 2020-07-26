@@ -49,6 +49,7 @@ import { dragscroll } from "vue-dragscroll";
 import PaperPanel from "./../components/Grade/PaperPanel";
 import QuestionPanel from "./../components/Grade/QuestionPanel";
 import GradingPanel from "./../components/Grade/GradingPanel";
+import $ from 'jquery'
 
 export default {
   components: {
@@ -183,6 +184,88 @@ export default {
       }
     },
   },
+  created () {
+    // Call after DOM rendered
+    this.$nextTick(function () {
+    console.log(this.$refs.tuiImageEditor.getRootElement().__vue__)
+  })
+  },
+  mounted() {
+    // FFS an image editing library with no zoom function!?
+    const editor = document.querySelector('.tui-image-editor')
+    editor.addEventListener('mousewheel', (e) => {
+      const canvas = document.querySelector('.tui-image-editor-canvas-container')
+      var imageOriginalSize = {
+        width: canvas.style.maxWidth,
+        height: canvas.style.maxHeight
+      };
+      var wDelta = e.wheelDelta || e.deltaY;
+      var imageEditorWindow = e.currentTarget;
+      var scrollContainer = $('.tui-image-editor-wrap');
+      var initWidth = imageEditorWindow.style.width;
+      var initHeight = imageEditorWindow.style.height;
+      var scrollContainerInitial = {
+        top: scrollContainer.scrollTop(),
+        left: scrollContainer.scrollLeft(),
+        height: scrollContainer[0].scrollHeight,
+        width: scrollContainer[0].scrollWidth
+      };
+      var mousePosition = {
+        top: e.clientY - $(imageEditorWindow).offset().top,
+        left: e.clientX - $(imageEditorWindow).offset().left
+      };
+      var newWidth;
+      var newHeight;
+      var offsetY;
+      var offsetX;
+      // Zoom step 10%
+      if (wDelta > 0) {
+        newWidth = parseInt(initWidth, 10) * 1.1;
+        newHeight = parseInt(initHeight, 10) * 1.1;
+        // Limit maximum zoom by image resolution
+        if (newWidth > imageOriginalSize.width || newHeight > imageOriginalSize.height || this.zoom >= 300) {
+          newWidth = imageOriginalSize.width;
+          newHeight = imageOriginalSize.height;
+          this.zoom = 300
+        }
+        else {this.zoom += 10}
+      } else {
+        newWidth = parseInt(initWidth, 10) * 0.9;
+        newHeight = parseInt(initHeight, 10) * 0.9;
+        this.zoom -= 10
+        // Limit minimum zoom by 0.5 of original container size
+        if (parseInt(imageEditorWindow.dataset.minWidth, 10) * 0.5 > parseInt(newWidth, 10)) {
+          newWidth = parseInt(imageEditorWindow.dataset.minWidth, 10) * 0.5;
+          newHeight = parseInt(imageEditorWindow.dataset.minHeight, 10) * 0.5;
+          this.zoom = 50
+        }
+      }
+      imageEditorWindow.style.width = newWidth + 'px';
+      imageEditorWindow.style.height = newHeight + 'px';
+      
+      $(imageEditorWindow).find('canvas, .tui-image-editor-canvas-container')
+        .css('max-width', imageEditorWindow.style.width)
+        .css('max-height', imageEditorWindow.style.height);
+
+      // Save initial size of container
+      if (imageEditorWindow.dataset.minHeight === undefined) {
+        imageEditorWindow.dataset.minHeight = initHeight;
+        imageEditorWindow.dataset.minWidth = initWidth;
+      }
+
+      // Calculate scroll offset for new position
+      offsetY = (scrollContainer[0].scrollHeight - scrollContainerInitial.height)
+      * (mousePosition.top / scrollContainerInitial.height);
+      offsetX = (scrollContainer[0].scrollWidth - scrollContainerInitial.width)
+      * (mousePosition.left / scrollContainerInitial.width);
+
+      scrollContainer.scrollTop(scrollContainerInitial.top + offsetY);
+      scrollContainer.scrollLeft(scrollContainerInitial.left + offsetX);
+
+      e.preventDefault();
+      e.stopPropagation();
+    });
+  }
 };
 </script>
 
@@ -202,6 +285,6 @@ export default {
   background-color: #f5f5f5;
 }
 .tui-image-editor-container .tui-image-editor-range-wrap label {
-  color: #000000
+  color: #000000;
 }
 </style>
