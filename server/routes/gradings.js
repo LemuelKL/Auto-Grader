@@ -1,13 +1,34 @@
 const express = require('express')
 const router = express.Router()
 const Grading = require('./../models/Grading')
+const Preset = require('./../models/Preset')
 
 router.get('/gradings/:paperId/:questionName/:candidate', async (req, res) => {
   console.log("Received request for Fetching Grading", { paperId: req.params.paperId, questionName: req.params.questionName, candidate: req.params.candidate })
   try {
-    const grading = await Grading.findOne({ paperId: req.params.paperId, questionName: req.params.questionName, candidate: req.params.candidate })
+    var grading = null
+    if (req.params.questionName === '*') {
+      grading = await Grading.find({ paperId: req.params.paperId, candidate: req.params.candidate }).sort('questionName')
+    } else {
+      grading = await Grading.findOne({ paperId: req.params.paperId, questionName: req.params.questionName, candidate: req.params.candidate })
+    }
     res.json(grading)
     console.log("Sent Grading: ", grading)
+  } catch (err) {
+    res.json({ msg: err })
+  }
+})
+
+router.get('/gradingTags/:paperId/:questionName/:candidate', async (req, res) => {
+  console.log("Received request for Fetching Grading Tags", { paperId: req.params.paperId, questionName: req.params.questionName, candidate: req.params.candidate })
+  try {
+    grading = await Grading.findOne({ paperId: req.params.paperId, questionName: req.params.questionName, candidate: req.params.candidate })
+    var tags = []
+    for (let pR of grading.presetRemark) {
+      tags.push(await Preset.findOne({_id: pR}))
+    }
+    res.json(tags)
+    console.log("Sent Tags: ", tags)
   } catch (err) {
     res.json({ msg: err })
   }

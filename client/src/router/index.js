@@ -5,6 +5,7 @@ import Home from '../views/Home.vue'
 import Paper from '../views/Paper.vue'
 import Preset from '../views/Preset.vue'
 import Grade from '../views/Grade.vue'
+import Result from '../views/Result.vue'
 
 Vue.use(VueRouter)
 
@@ -33,6 +34,18 @@ Vue.use(VueRouter)
     path: '/Grade',
     name: 'Grade',
     component: Grade
+  },
+  {
+    path: '/Result/:candidateId/:paperId/:questionName',
+    name: 'Result',
+    component: Result,
+    props: true
+  },
+  {
+    path: '/Result/:candidateId/:paperId',
+    name: 'Result',
+    component: Result,
+    props: true
   }
 ]
 

@@ -12,6 +12,15 @@ router.get('/presets', async (req, res) => {
   }
 })
 
+router.get('/presets/:_id', async (req, res) => {
+  try {
+    const preset = await Preset.findOne({ _id: req.params._id })
+    res.json(preset)
+  } catch (err) {
+    res.json({ msg: err })
+  }
+})
+
 router.get('/presets/paper/:paperId', async (req, res) => {
   try {
     const presets = await Preset.find().or([{paperId: req.params.paperId}, {paperId: ''}])  // To include "global" presets as well

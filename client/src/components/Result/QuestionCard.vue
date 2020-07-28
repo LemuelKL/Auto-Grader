@@ -1,0 +1,98 @@
+<template>
+  <v-card class="my-3" filled>
+    <v-card-title>{{questionName}}</v-card-title>
+    <v-card-subtitle>{{gradingId}}</v-card-subtitle>
+    <v-divider></v-divider>
+    <v-card-text>
+      <v-img :src="imgUrl" contain></v-img>
+    </v-card-text>
+    <v-divider></v-divider>
+    <v-card-text>
+      <v-chip
+        v-for="s in questionMaxScore"
+        :key="s"
+        :value="s"
+        class="ml-2"
+        :class="`${s === score?'primary':''}`"
+      >{{ s }}</v-chip>
+    </v-card-text>
+    <v-divider v-if="tags.length != 0"></v-divider>
+    <v-card-text v-if="tags.length != 0">
+      <v-chip
+        label
+        class="mr-2"
+        v-for="tag in tags"
+        :key="tag._id"
+        link
+        @click="toggleTag(tag._id)"
+        :class="`${(tag._id === activeTagId)?'primary':''}`"
+      >{{tag.name}}</v-chip>
+      <v-card-text v-show="showTagDescription">{{tagDescription}}</v-card-text>
+    </v-card-text>
+    <v-divider v-if="comment"></v-divider>
+    <v-card-text v-if="!!comment" class="pt-1">
+      <v-textarea
+        flat
+        no-resize
+        disabled
+        hide-details
+        solo
+        prepend-icon="mdi-comment"
+        auto-grow
+        rows="1"
+        :value="comment"
+      ></v-textarea>
+    </v-card-text>
+  </v-card>
+</template>
+
+<script>
+import axios from "axios";
+export default {
+  props: {
+    imgUrl: String,
+    paperId: String,
+    candidateId: String,
+    gradingId: String,
+    questionName: String,
+    questionMaxScore: Number,
+    score: Number,
+    comment: String,
+  },
+  data() {
+    return {
+      tags: [],
+      activeTagId: "",
+      showTagDescription: false,
+      tagDescription: "",
+    };
+  },
+  methods: {
+    toggleTag(_id) {
+      if (_id === this.activeTagId) {
+        this.showTagDescription = !this.showTagDescription;
+        this.activeTagId = ''
+      } else {
+        this.showTagDescription = true;
+        this.activeTagId = _id;
+      }
+      const d = this.tags.find((t) => t._id === this.activeTagId).description;
+      if (d === "") {
+        this.tagDescription = "No description.";
+      } else {
+        this.tagDescription = d;
+      }
+    },
+  },
+  created() {
+    axios
+      .get(
+        `http://localhost:3000/gradingTags/${this.paperId}/${this.questionName}/${this.candidateId}`
+      )
+      .then((res) => res.data)
+      .then((data) => {
+        this.tags = data;
+      });
+  },
+};
+</script>
