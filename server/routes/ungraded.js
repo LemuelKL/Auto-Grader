@@ -236,7 +236,7 @@ async function perCandidateSplit(pdfUri, candidate, pageIndices, savePath) {
     if (err) return console.error(err);
     fs.writeFileSync(`${dir}/attempt.pdf`, await pdfDoc.save())
     // Lemuel is so smart OMG!
-    const scale = 2
+    const scale = 1
     Pdf2Img(`${savePath}/${candidate}/attempt.pdf`, scale).then(pageImages => {
       questions.forEach(q => {
         Jimp.read(pageImages[q.page - 1], async function (err, image) {

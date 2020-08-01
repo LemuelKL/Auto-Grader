@@ -36,12 +36,6 @@ Vue.use(VueRouter)
     component: Grade
   },
   {
-    path: '/Result/:candidateId/:paperId/:questionName',
-    name: 'Result',
-    component: Result,
-    props: true
-  },
-  {
     path: '/Result/:candidateId/:paperId',
     name: 'Result',
     component: Result,
