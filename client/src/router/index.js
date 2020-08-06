@@ -6,6 +6,7 @@ import Paper from '../views/Paper.vue'
 import Preset from '../views/Preset.vue'
 import Grade from '../views/Grade.vue'
 import Result from '../views/Result.vue'
+import Report from '../views/Report.vue'
 
 Vue.use(VueRouter)
 
@@ -40,6 +41,11 @@ Vue.use(VueRouter)
     name: 'Result',
     component: Result,
     props: true
+  },
+  {
+    path: '/Report',
+    name: 'Report',
+    component: Report
   }
 ]
 

@@ -3,6 +3,17 @@ const router = express.Router()
 const Grading = require('./../models/Grading')
 const Preset = require('./../models/Preset')
 
+router.get('/gradings/:paperId', async (req, res) => {
+  console.log("Received request for Fetching Grading", { paperId: req.params.paperId })
+  try {
+    const gradings = await Grading.find({ paperId: req.params.paperId })
+    res.json(gradings)
+    console.log("Sent Grading: ", grading)
+  } catch (err) {
+    res.json({ msg: err })
+  }
+})
+
 router.get('/gradings/:paperId/:questionName/:candidate', async (req, res) => {
   console.log("Received request for Fetching Grading", { paperId: req.params.paperId, questionName: req.params.questionName, candidate: req.params.candidate })
   try {

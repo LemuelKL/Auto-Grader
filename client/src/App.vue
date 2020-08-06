@@ -45,6 +45,13 @@
           </v-list-item-icon>
           <v-list-item-title>Grade</v-list-item-title>
         </v-list-item>
+
+        <v-list-item to="/Report">
+          <v-list-item-icon>
+            <v-icon>mdi-microsoft-excel</v-icon>
+          </v-list-item-icon>
+          <v-list-item-title>Report</v-list-item-title>
+        </v-list-item>
       </v-list>
     </v-navigation-drawer>
 
