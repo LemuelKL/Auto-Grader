@@ -51,7 +51,7 @@
 </template>
 
 <script>
-import axios from "axios";
+import { axiosInstance } from './../api/api.js'
 export default {
   props: {
     show: Boolean,
@@ -86,8 +86,8 @@ export default {
         preset.questionName = this.specifiedQuestionName;
       else preset.questionName = "";
       if (this.mode === "Edit") {
-        axios
-          .put(`http://localhost:3000/presets/${this.presetId}`, preset)
+        axiosInstance
+          .put(`/presets/${this.presetId}`, preset)
           .then(response => response.data)
           .then(updatedPreset => {
             this.$emit("update:show", false);
@@ -95,8 +95,8 @@ export default {
           });
       }
       if (this.mode === "Create") {
-        axios
-          .post(`http://localhost:3000/presets`, preset)
+        axiosInstance
+          .post(`/presets`, preset)
           .then(response => response.data)
           .then(newPreset => {
             this.$emit("update:show", false);
@@ -135,8 +135,8 @@ export default {
     },
 
     specifiedPaperId: function(val) {
-      axios
-        .get(`http://localhost:3000/papers/${val}`)
+      axiosInstance
+        .get(`/papers/${val}`)
         .then(response => response.data)
         .then(data => {
           this.availableQuestionNames = [];

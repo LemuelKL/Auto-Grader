@@ -29,7 +29,7 @@ router.post('/pdf', (req, res) => {
         })
       })
     }
-    res.send({ numPages: pdfDoc.getPageCount(), imgsPath: `http://localhost:3000/img/${pdf.name}`, width: pdfDimesion.width, height: pdfDimesion.height })
+    res.send({ numPages: pdfDoc.getPageCount(), imgsPath: '/img/${pdf.name}', width: pdfDimesion.width, height: pdfDimesion.height })
   })
 })
 

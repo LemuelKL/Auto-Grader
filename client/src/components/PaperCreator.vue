@@ -39,7 +39,7 @@
   </div>
 </template>
 <script>
-import axios from "axios";
+import { axiosInstance } from './../api/api.js'
 import QuestoniRegister from "./QuestionRegister";
 import CandidateRegister from "./CandidateRegister";
 export default {
@@ -71,8 +71,8 @@ export default {
       );
       formData.append("questions", JSON.stringify(this.questions));
 
-      axios
-        .post("http://localhost:3000/papers", formData)
+      axiosInstance
+        .post("/papers", formData)
         .then(res => {
           this.responseData = res.data;
         })
@@ -106,14 +106,14 @@ export default {
       this.maxScores = [];
       const formData = new FormData();
       formData.append("pdf", this.template);
-      axios
-        .post("http://localhost:3000/pdf", formData)
+      axiosInstance
+        .post("/pdf", formData)
         .then(response => response.data)
         .then(data => {
           console.log(data);
           this.numPages = data.numPages;
           this.awaitingNumPagesResult = false;
-          this.imgsDir = data.imgsPath;
+          this.imgsDir = process.env.VUE_APP_ROOT_API + data.imgsPath;
           this.page = 1;
           this.imgW = data.width;
           this.imgH = data.height;

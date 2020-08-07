@@ -5,7 +5,7 @@
         <div v-if="!!paperId && !!candidateId">
           <v-row no-gutters v-for="grading in gradings" :key="grading.questionName" >
             <question-card
-              :imgUrl="`http://localhost:3000/graded/${paperId}/${candidateId}/${grading.questionName}.png`"
+              :imgUrl="`/graded/${paperId}/${candidateId}/${grading.questionName}.png`"
               :paperId="paperId"
               :candidateId="candidateId"
               :gradingId="grading._id"
@@ -33,7 +33,7 @@
 </template>
 
 <script>
-import axios from "axios";
+import { axiosInstance } from './../api/api.js'
 import _ from "lodash";
 import QuestionCard from "./../components/Result/QuestionCard";
 export default {
@@ -57,8 +57,8 @@ export default {
   },
   watch: {
     gradings() {
-      axios
-        .get(`http://localhost:3000/papers/${this.paperId}`)
+      axiosInstance
+        .get(`/papers/${this.paperId}`)
         .then((res) => res.data)
         .then((data) => {
           this.numPages = data.numPages;
@@ -79,9 +79,9 @@ export default {
   },
 
   created() {
-    axios
+    axiosInstance
       .get(
-        `http://localhost:3000/gradings/${this.paperId}/*/${this.candidateId}`
+        `/gradings/${this.paperId}/*/${this.candidateId}`
       )
       .then((res) => res.data)
       .then((data) => {

@@ -34,7 +34,7 @@
 </template>
 
 <script>
-import axios from "axios";
+import { axiosInstance } from './../../api/api.js'
 export default {
   data() {
     return {
@@ -79,8 +79,8 @@ export default {
       });
 
       // Fetch grading scores and populate this.result
-      axios
-        .get(`http://localhost:3000/gradings/${this.paperId}`)
+      axiosInstance
+        .get(`/gradings/${this.paperId}`)
         .then((res) => res.data)
         .then((data) => {
           data.forEach((d) => {
@@ -100,8 +100,9 @@ export default {
 
   },
   created() {
-    axios
-      .get("http://localhost:3000/papers")
+    axiosInstance
+
+      .get("/papers")
       .then((res) => res.data)
       .then((data) => {
         this.papers = data;

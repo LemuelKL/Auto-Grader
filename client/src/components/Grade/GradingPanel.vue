@@ -81,7 +81,7 @@
 </template>
 
 <script>
-import axios from "axios";
+import { axiosInstance } from './../../api/api.js'
 import _ from "lodash";
 export default {
   props: {
@@ -153,9 +153,9 @@ export default {
 
     fetchPresets() {
       if (!!this.paperId && !!this.questionName) {
-        axios
+        axiosInstance
           .get(
-            `http://localhost:3000/presets/paper/${this.paperId}/question/${this.questionName}`
+            `/presets/paper/${this.paperId}/question/${this.questionName}`
           )
           .then((response) => response.data)
           .then((data) => {
@@ -165,9 +165,9 @@ export default {
     },
     fetchGrading() {
       if (!!this.paperId && !!this.questionName && !!this.candidate.pyccode) {
-        axios
+        axiosInstance
           .get(
-            `http://localhost:3000/gradings/${this.paperId}/${this.questionName}/${this.candidate.pyccode}`
+            `/gradings/${this.paperId}/${this.questionName}/${this.candidate.pyccode}`
           )
           .then((response) => response.data)
           .then((data) => {
@@ -188,15 +188,15 @@ export default {
     submitGrading() {
       if (this.preventSubmission) return (this.preventSubmission = false);
       // Called when Update as well
-      axios
-        .put("http://localhost:3000/gradings", this.grading)
+      axiosInstance
+        .put("/gradings", this.grading)
         .then(() => {
           const drawingBase64 = this.$parent.$refs.tuiImageEditor.invoke(
             "toDataURL"
           );
-          axios
+          axiosInstance
             .put(
-              `http://localhost:3000/gradingImages/${this.grading.paperId}/${this.grading.questionName}/${this.grading.candidate}`,
+              `/gradingImages/${this.grading.paperId}/${this.grading.questionName}/${this.grading.candidate}`,
               { image: drawingBase64 }
             )
             .then((res) => {

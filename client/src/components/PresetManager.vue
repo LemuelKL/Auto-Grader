@@ -133,7 +133,7 @@
 </template>v
 
 <script>
-import axios from "axios";
+import { axiosInstance } from './../api/api.js'
 import PresetDialog from "./PresetDialog";
 export default {
   props: {
@@ -188,8 +188,8 @@ export default {
     },
     fetchPaperNameById(paperId) {
       return new Promise((resolve, reject) => {
-        axios
-          .get(`http://localhost:3000/papers/${paperId}`)
+        axiosInstance
+          .get(`/papers/${paperId}`)
           .then(response => response.data)
           .then(data => {
             resolve(data.name);
@@ -201,8 +201,8 @@ export default {
       });
     },
     fetchPresets() {
-      axios
-        .get("http://localhost:3000/presets")
+      axiosInstance
+        .get("/presets")
         .then(response => response.data)
         .then(async data => {
           this.presets = [];
@@ -239,8 +239,8 @@ export default {
     },
     deletePreset(_id) {
       // Check if preset is already in-use in Papers
-      axios
-        .get(`http://localhost:3000/presets/${_id}/gradings`)
+      axiosInstance
+        .get(`/presets/${_id}/gradings`)
         .then(response => response.data)
         .then(data => {
           if (data.length != 0) {
@@ -249,8 +249,8 @@ export default {
               this.$refs[`${_id}-delete`][0].value = false;
             }, 1000)
           } else {
-            axios
-              .delete(`http://localhost:3000/presets/${_id}`)
+            axiosInstance
+              .delete(`/presets/${_id}`)
               .then(response => {
                 if (response.status == 200) console.log("Good");
                 const index = this.presets.findIndex(p => p._id === _id);

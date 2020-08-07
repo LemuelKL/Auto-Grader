@@ -50,7 +50,7 @@
                 <v-card outlined width="64" height="36">
                   <v-card-title class="pa-0 justify-center">{{page}}</v-card-title>
                 </v-card>
-                <v-switch :value="panMode" @change="$emit('panModeUpdated', $event)" label="Pan Mode"></v-switch>
+                <v-switch :value="panMode" @change="$emit('pan-mode-updated', $event)" label="Pan Mode"></v-switch>
                 <v-spacer></v-spacer>
                 <v-btn elevation="0" class="ma-2" @click="zoomIn()">
                   <v-icon>mdi-magnify-plus</v-icon>
@@ -71,7 +71,7 @@
 </template>
 
 <script>
-import axios from "axios";
+import { axiosInstance } from './../../api/api.js'
 export default {
   props: {
     page: Number,
@@ -116,13 +116,13 @@ export default {
     },
 
     fetchPapers() {
-      axios
-        .get("http://localhost:3000/papers/ungraded")
+      axiosInstance
+        .get("/papers/ungraded")
         .then((response) => response.data)
         .then((data) => {
           for (let d of data) {
-            axios
-              .get(`http://localhost:3000/papers/${d}`)
+            axiosInstance
+              .get(`/papers/${d}`)
               .then((response) => response.data)
               .then((data) => {
                 this.papers.push(data);
@@ -132,8 +132,8 @@ export default {
     },
 
     fetchPaperDetails() {
-      axios
-        .get(`http://localhost:3000/papers/${this.paperId}`)
+      axiosInstance
+        .get(`/papers/${this.paperId}`)
         .then((response) => response.data)
         .then((data) => {
           this.candidates = data.candidates;
@@ -145,8 +145,8 @@ export default {
     },
 
     fetchCandidates() {
-      axios
-        .get(`http://localhost:3000/papers/ungraded/${this.paperId}/students`)
+      axiosInstance
+        .get(`/papers/ungraded/${this.paperId}/students`)
         .then((response) => response.data)
         .then((data) => {
           this.$emit("updateCandidates", data);

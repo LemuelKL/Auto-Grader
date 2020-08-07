@@ -27,7 +27,7 @@
           :page="page"
           :zoom="zoom"
           :panMode="panMode"
-          @panModeUpdated="updatePanMode"
+          @pan-mode-updated="updatePanMode"
           @requestZoomIn="setZoom('in')"
           @requestZoomOut="setZoom('out')"
           @paperChanged="paperId = $event"
@@ -127,7 +127,7 @@ export default {
           },
           menu: ["draw", "shape", "icon", "text"],
           loadImage: {
-            path: "http://localhost:3000/graded/welcome.jpg",
+            path: `${process.env.VUE_APP_ROOT_API}/graded/welcome.jpg`,
             name: "welcome",
           },
           theme: whiteTheme,
@@ -165,7 +165,7 @@ export default {
   computed: {
     imageUrl() {
       if (!this.paperId || !this.candidateId || !this.questionName) return "";
-      return `http://localhost:3000/graded/${this.paperId}/${this.candidateId}/${this.questionName}.png`;
+      return `${process.env.VUE_APP_ROOT_API}/graded/${this.paperId}/${this.candidateId}/${this.questionName}.png`;
     },
   },
   watch: {

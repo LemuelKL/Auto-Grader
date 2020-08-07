@@ -71,7 +71,7 @@
 </template>
 
 <script>
-import axios from "axios";
+import { axiosInstance } from './../api/api.js'
 
 export default {
   data() {
@@ -93,8 +93,8 @@ export default {
       const formData = new FormData();
       formData.append("pdf", this.paper);
 
-      axios
-        .post("http://localhost:3000/papers/ungraded", formData)
+      axiosInstance
+        .post("/papers/ungraded", formData)
         .then(res => {
           this.responseData = res.data;
         })

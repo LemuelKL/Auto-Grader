@@ -33,7 +33,7 @@
   </v-container>
 </template>
 <script>
-import axios from 'axios'
+import { axiosInstance } from './../api/api.js'
 export default {
   data() {
     return {
@@ -64,7 +64,7 @@ export default {
   },
 
   created () {
-    axios.get('http://localhost:3000/students/grouped/class').then(response => response.data).then(data => {
+    axiosInstance.get('/students/grouped/class').then(response => response.data).then(data => {
       var raw = data
       raw.forEach(el => {
         el.label = el._id

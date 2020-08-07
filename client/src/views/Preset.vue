@@ -7,7 +7,7 @@
 </template>
 
 <script>
-import axios from "axios";
+import { axiosInstance } from './../api/api.js'
 import PresetManager from "./../components/PresetManager";
 export default {
   components: {
@@ -19,8 +19,8 @@ export default {
     };
   },
   created() {
-    axios
-      .get("http://localhost:3000/papers")
+    axiosInstance
+      .get("/papers")
       .then(response => response.data)
       .then(data => {
         this.papers = data;

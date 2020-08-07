@@ -40,7 +40,7 @@
 </template>
 
 <script>
-import axios from "axios";
+import { axiosInstance } from './../../api/api.js'
 export default {
   props: {
     imgUrl: String,
@@ -78,9 +78,9 @@ export default {
     },
   },
   created() {
-    axios
+    axiosInstance
       .get(
-        `http://localhost:3000/gradingTags/${this.paperId}/${this.questionName}/${this.candidateId}`
+        `/gradingTags/${this.paperId}/${this.questionName}/${this.candidateId}`
       )
       .then((res) => res.data)
       .then((data) => {

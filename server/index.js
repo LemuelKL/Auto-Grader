@@ -31,8 +31,7 @@ app.use(require('./routes/pdf.js'))
 app.use(require('./routes/gradings.js'))
 app.use(require('./routes/presets.js'))
 
-app.listen(3000, () => {
-  console.log("Listening on port 3000...")
-})
-
-
+const port = process.env.PORT || 3000;
+app.listen(port, () => {
+  console.log('Express server listening on port', port)
+});
