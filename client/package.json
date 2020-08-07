@@ -6,8 +6,7 @@
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build --mode production",
     "lint": "vue-cli-service lint",
-	"start": "vue-cli-service serve",
-    "dev": "clear && vue-cli-service serve"
+	"start": "vue-cli-service serve"
   },
   "dependencies": {
     "@toast-ui/vue-image-editor": "^1.2.0",
