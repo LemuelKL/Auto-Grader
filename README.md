@@ -4,6 +4,10 @@ This code aims to create a web application in which teachers can create, distrib
 ## Terminology
 - Paper - A quiz/test/exam
 - Template - A paper that has not been attempted, the blueprint/draft of the paper itself.
+- Candidate - A person who attempts a paper. He is uniquely identified by a candidate ID.
+- Tag - A label a teacher can create to facilitate grading. A tag can be created to point out common/general mistakes candidates make in a question. It can be applied to a question during grading. This is sometimes refered as `customRemark` in the code.
+- Comment - A string of text a teacher can input and apply to an attempted question.
+- Grading - A abstracted concept of teacher's marking on an attempted question. A Grading can consists of tags, comments and a given score.
 
 ## Create
 ### Import
