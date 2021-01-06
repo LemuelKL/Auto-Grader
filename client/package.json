@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@toast-ui/vue-image-editor": "^1.2.0",
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "core-js": "^3.6.5",
     "cropperjs": "^1.5.7",
     "jquery": "^3.5.1",
