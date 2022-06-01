@@ -30,7 +30,7 @@
     "pg-promise": "^10.5.7",
     "qrcode": "^1.4.4",
     "qrcode-reader": "^1.0.4",
-    "sharp": "^0.25.4",
+    "sharp": "^0.30.5",
     "underscore": "^1.10.2"
   }
 }
